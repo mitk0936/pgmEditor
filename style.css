@@ -1,0 +1,110 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+.clearfix:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+     }
+.clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* close commented backslash hack */
+
+body {
+	background-color: #ccc;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+}
+
+#drop-file-area {
+	width: 100%;
+	height: 140px;
+	position: relative;
+	margin-bottom: 50px;
+}
+
+#drop-file-area h1{
+	text-align: center;
+	line-height: 140px;
+	color: #333;
+	margin: 10px;
+	border: 5px dashed #333;
+	border-radius: 20px;
+	font-size: 14px;
+}
+
+#file-name-label {
+	padding: 20px;
+	text-align: center;
+}
+
+#drop-file-area input[type="file"] {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	opacity: 0;
+	width: 100%;
+	display: block;
+}
+
+#image-views {
+	clear: both;
+}
+
+.canvas-container {
+	width: 50%;
+	overflow: auto;
+	float: left;
+	position: relative;
+	min-height: 90px;
+}
+
+#contrast-control fieldset {
+	margin: 20px auto;
+	display: block;
+	padding: 30px;
+	width: 80%;
+	border-radius: 20px;
+}
+
+#contrast-control fieldset legend {
+	display: block;
+	padding: 10px;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+#contrast-control label, #contrast-control input {
+	display: block;
+	font-size: 16px;
+	margin: 6px 0;
+	width: 100%;
+}
+
+a#download-file-link {
+	display: block;
+	padding: 10px;
+	width: 200px;
+	max-width: 100%;
+	margin: 0 auto 10px;
+	border-radius: 20px;
+	background-color: #fff;
+	border: 2px solid #333;
+	text-align: center;
+	color: #333;
+	font-weight: bold;
+	font-size: 15px;
+	cursor: pointer;
+	display: none;
+	bottom: 0;
+	left: 0;
+}

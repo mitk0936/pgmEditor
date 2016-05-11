@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+	<title>Pgm Editor</title>
+
+	<!-- Bitmap library -->
+	<script type="text/javascript" src="js/bitmap.js"></script>
+
+	<script type="text/javascript" src="js/pgmDrawer.js"></script>
+	<script type="text/javascript" src="js/pgmReader.js"></script>
+	<script type="text/javascript" src="js/appCtrl.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="style.css">
+
+	<script type="text/javascript">
+		var appController;
+
+		window.onload = function () {
+
+			if ( window.File && window.FileReader && window.FileList && window.Blob ) {
+				appController = new AppCtrl({
+					inputFileDomEl: document.getElementById('pgm-file-selector'),
+					inputFileCanvas: document.getElementById('input-file-canvas'),
+					outputFileCanvas: document.getElementById('output-file-canvas'),
+					fileNameLabelDomEl: document.getElementById('file-name-label'),
+					contrastControlElements: {
+						r1ValueDomEl: document.getElementById('r-1-value'),
+						s1ValueDomEl: document.getElementById('s-1-value'),
+						r2ValueDomEl: document.getElementById('r-2-value'),
+						s2ValueDomEl: document.getElementById('s-2-value'),
+						r1ValueLabelDomEl: document.getElementById('r-1-value-label'),
+						s1ValueLabelDomEl: document.getElementById('s-1-value-label'),
+						r2ValueLabelDomEl: document.getElementById('r-2-value-label'),
+						s2ValueLabelDomEl: document.getElementById('s-2-value-label')
+					},
+					downloadFileLink: document.getElementById('download-file-link')
+				}).init();
+			} else {
+				alert('The File APIs are not fully supported in this browser. Please open the app in Google Chrome.');
+			}
+
+		};
+	</script>
+</head>
+<body>
+	<div id="main-container">
+		<div id="drop-file-area">
+			<h1>Drag and drop your .pgm file here</h1>
+			<input type="file" id="pgm-file-selector" name="pgm-file" accept=".pgm" />
+		</div>
+
+		<div class='control-wrapper'>
+			<div id='contrast-control'>
+				<fieldset>
+					<legend>Contrast stretching control (0-255)</legend>
+					<label>R1 value: <span id='r-1-value-label'></span></label>
+					<input type='range' min='0' max='255' value='65' name='r-1-value' id='r-1-value'/>
+					<label>S1 value: <span id='s-1-value-label'></span></label>
+					<input type='range' min='0' max='255' value='127' name='s-1-value' id='s-1-value'/>
+					<label>R2 value: <span id='r-2-value-label'></span></label>
+					<input type='range' min='1' max='255' value='90' name='r-2-value' id='r-2-value'/>
+					<label>S2 value: <span id='s-2-value-label'></span></label>
+					<input type='range' min='0' max='255' value='125' name='s-2-value' id='s-2-value'/>
+				</fieldset>
+			</div>
+		</div>
+
+		<h2 id='file-name-label'></h2>
+
+		<a id="download-file-link" download="">Download Editted file</a>
+
+		<div id="image-views" class='clearfix'>
+			<div class="canvas-container">
+				<canvas width="0" height="0" id='input-file-canvas'></canvas>
+			</div>
+			<div class="canvas-container">
+				<canvas width="0" height="0" id='output-file-canvas'></canvas>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
