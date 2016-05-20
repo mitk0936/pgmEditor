@@ -64,7 +64,7 @@ function AppCtrl(options) {
 		},
 		handleFileSelect = function (evt) {
 			currentUploadedFile = evt.target.files[0];
-		
+
 			if ( !currentUploadedFile ) {
 				return;
 			}
@@ -76,16 +76,16 @@ function AppCtrl(options) {
 			filteredFileOutput = null;
 
 			pgmReader.readPGM(evt.target.files[0], function onError (err) {
-				
+
 				alert(err.message);
 				return;
 
 			}, function onReady(readerOutput) {
 				originalFileReaderOutput = readerOutput;
 
-				pgmDrawer.drawPGM(originalFileReaderOutput, options.inputFileCanvas);
-
-				redrawEdittedFile();
+				pgmDrawer.drawPGM(originalFileReaderOutput, options.inputFileCanvas, null, function () {
+					redrawEdittedFile();
+				});
 
 				setFileNameLabel(false);
 			});
@@ -108,11 +108,13 @@ function AppCtrl(options) {
 
 			if ( originalFileReaderOutput ) {
 				setFileNameLabel(true);
-				
+
 				setTimeout(function () {
-					filteredFileOutput = pgmDrawer.drawPGM(originalFileReaderOutput, options.outputFileCanvas, contrastFilterValues);
-					setFileNameLabel(false);
-					setDownloadLink(true);
+					pgmDrawer.drawPGM(originalFileReaderOutput, options.outputFileCanvas, contrastFilterValues, function (output) {
+						filteredFileOutput = output;
+						setFileNameLabel(false);
+						setDownloadLink(true);
+					});
 				}, 20);
 
 			}

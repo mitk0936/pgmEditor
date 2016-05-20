@@ -4,7 +4,7 @@ function PgmDrawer() {
 	var cachePixels = {},
 		imagePartSize = 125,
 		ctx,
-		drawPGM = function ( pgmReaderOutput, canvasDomEl, filter ) {
+		drawPGM = function ( pgmReaderOutput, canvasDomEl, filter, onComplete ) {
 
 			var pgmReaderOutput = JSON.parse(JSON.stringify(pgmReaderOutput));
 
@@ -16,11 +16,13 @@ function PgmDrawer() {
 
 			console.time('draw PGM', 'time');
 			// drawPerPX( pgmReaderOutput, canvasDomEl, filter );
-			pgmReaderOutput.matrix = generateBitmap(pgmReaderOutput.matrix, pgmReaderOutput.header.imageWidth,  pgmReaderOutput.header.imageHeight, filter);
-			console.timeEnd('draw PGM', 'time');
-
-			// returning the output with apllied filter
-			return pgmReaderOutput;
+			generateBitmap(pgmReaderOutput.matrix, pgmReaderOutput.header.imageWidth,  pgmReaderOutput.header.imageHeight, filter, function (arrPixels) {
+				console.timeEnd('draw PGM', 'time');
+				onComplete({
+					header: pgmReaderOutput.header,
+					matrix: arrPixels
+				});
+			});
 		},
 		getImagePartsCount = function (pxSize) {
 			var parts = 0;
@@ -35,14 +37,11 @@ function PgmDrawer() {
 
 			return parts;
 		},
-		generateBitmap = function (arrPixels, width, height, filter) {
-			var imageParts = [],
-				xParts,
-				yParts,
-				partPixelsArr = [];
+		generateBitmap = function (arrPixels, width, height, filter, onComplete) {
 
-			xParts = getImagePartsCount(width);
-			yParts = getImagePartsCount(height);
+			var xParts = getImagePartsCount(width),
+				yParts = getImagePartsCount(height);var imageParts = [],
+				partPixelsArr = [];
 
 			var pixelsLeftWidth,
 				pixelsLeftHeight = height;
@@ -72,9 +71,6 @@ function PgmDrawer() {
 							height: stepY
 						};
 
-					imageParts.push(partObj);
-
-					bmp = new Bitmap(partObj.width, partObj.height);
 					imgPartPixels = [];
 
 					for ( var x = 0; x < partObj.width; x++ ) {
@@ -84,11 +80,12 @@ function PgmDrawer() {
 							var realX = partObj.startX + x,
 								realY = partObj.startY + y;
 
-							greyValue = arrPixels[realY][realX];
+							greyValue = parseInt(arrPixels[realY][realX]);
 
 							if ( filter ) {
 								greyValue = ( filter.s1 + ( greyValue * (filter.s2 - filter.s1) / (filter.r2 - filter.r1) ) );
-								greyValue = Math.min(parseInt(greyValue), 255);
+								greyValue = Math.min(greyValue, 255);
+								greyValue = Math.max(greyValue, 0);
 							}
 
 							arrPixels[realY][realX] = greyValue;
@@ -100,18 +97,19 @@ function PgmDrawer() {
 						}
 					}
 
+					bmp = new Bitmap(partObj.width, partObj.height);
 					bmp.pixel = imgPartPixels;
 					partObj.bmp = bmp;
-
 					addToCanvas(partObj);
 
+					imageParts.push(partObj);
 					pixelsLeftWidth -= stepX;
 				}
 
 				pixelsLeftHeight -= stepY;
 			}
 
-			return arrPixels;
+			onComplete(arrPixels);
 		},
 		addToCanvas = function (imagePart) {
 			var image = new Image();

@@ -2,13 +2,15 @@
 function PgmReader() {
 
 	var browserReader,
+		MT = new Multithread(2),
 		encryptionTypeAllowed = {
 			'P2': true
 		},
 		readPGM = function (fileInput, onError, onFileReady) {
 			browserReader = new FileReader();
-			
+
 			browserReader.onload = function (e) {
+				console.time('Reading PGM', 'time');
 				onFileLoad(e, onError, onFileReady);
 			};
 
@@ -39,53 +41,65 @@ function PgmReader() {
 			browserReader.readAsText(fileInput);
 		},
 		onFileLoad = function (e, onError, onFileReady) {
-			var headerData = [],
-				lines = e.target.result.split('\n'),
-				arrValues = [],
-				lineArr,
-				line;
 
-			for ( var l = 0; l < lines.length; l++ ) {
-				lineArr = lines[l];
+			MT.process(function (fileLines) {
+				var headerData = [],
+					lines = fileLines.split('\n'),
+					arrValues = [],
+					lineArr,
+					line;
 
-				// remove multiple spaces and split by empty space
-				lineArr = lines[l].replace(/\s+/g, ' ').trim().split(' ');
+				for ( var l = 0; l < lines.length; l++ ) {
+					lineArr = lines[l];
 
-				// dont include comments
-				if ( lineArr[0].indexOf('#') < 0 ) {
-					for ( var i = 0; i < lineArr.length; i++ ) {
+					// remove multiple spaces and split by empty space
+					lineArr = lines[l].replace(/\s+/g, ' ').trim().split(' ');
 
-						if ( l == 0 && i == 0 ) {
-							// first value on the first line is the encryption type
-							arrValues.push(lineArr[i]);
-							continue;
-						}
+					// dont include comments
+					if ( lineArr[0].indexOf('#') < 0 ) {
+						for ( var i = 0; i < lineArr.length; i++ ) {
 
-						// if the value is number
-						// we store in the array with values
-						if ( !isNaN(parseInt(lineArr[i])) ) {
-							arrValues.push(parseInt(lineArr[i]));
+							if ( l == 0 && i == 0 ) {
+								// first value on the first line is the encryption type
+								arrValues.push(lineArr[i]);
+								continue;
+							}
+
+							// if the value is number
+							// we store in the array with values
+							if ( !isNaN(parseInt(lineArr[i])) ) {
+								arrValues.push(parseInt(lineArr[i]));
+							}
 						}
 					}
-				}				
-		    }
+			    }
 
-		    var headerValidation = validateHeader(arrValues);
+			    return arrValues;
 
-		    if ( !headerValidation.isValid ) {
-		    	onError({
-		    		message: headerValidation.errMessage
+			}, function (arrValues) {
+				var headerValidation = validateHeader(arrValues);
+
+			    if ( !headerValidation.isValid ) {
+			    	onError({
+			    		message: headerValidation.errMessage
+			    	});
+			    }
+
+			    // if header is not valid fallback to square image
+			    headerValidation.header = headerValidation.header || generatePGMHeader(arrValues);
+
+			    console.timeEnd('Reading PGM', 'time');
+			    // matrix contains all pixel values, except header settings (first 4 values)
+		    	onFileReady({
+		    		'header': headerValidation.header,
+		    		'matrix': generateMatrix(headerValidation.header, arrValues)
 		    	});
-		    }
 
-		    // if header is not valid fallback to square image
-		    headerValidation.header = headerValidation.header || generatePGMHeader(arrValues);
 
-		    // matrix contains all pixel values, except header settings (first 4 values)
-	    	onFileReady({
-	    		'header': headerValidation.header,
-	    		'matrix': generateMatrix(headerValidation.header, arrValues)
-	    	});
+			})(e.target.result);
+
+
+
 		},
 		validateHeader = function (fileArrValues) {
 			var validHeader = {
@@ -127,7 +141,7 @@ function PgmReader() {
 		},
 		generateMatrix = function (header, arrValues) {
 			arrValues.splice(0, 4);
-			
+
 			var outputMatrix = [],
 				arrIndex = 0,
 				colorValue;
@@ -160,7 +174,7 @@ function PgmReader() {
 				space = String.fromCharCode(32)
 
 			var text = 'P2' + CR;
-			
+
 			text += fileObject.header.imageWidth + ' ' + fileObject.header.imageHeight + CR + fileObject.header.maxGreyValue + CR;
 
 			for ( var y = 0; y < fileObject.matrix.length; y++ ) {
